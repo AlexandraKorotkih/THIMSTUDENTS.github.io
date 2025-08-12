@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSK-11 Kalkulator - THIM STUDENTS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-50 p-6">
+  <header class="text-center mb-6">
+    <h1 class="text-3xl font-bold text-blue-800">THIM STUDENTS</h1>
+    <h2 class="text-xl mt-2">Tampa Skala für Kinesiophobie (TSK-11)</h2>
+    <p class="text-gray-600 mt-1">Antwortoptionen: A=1, B=2, C=3, D=4. Rückkodierung: Fragen 4, 8, 11</p>
+  </header>
+  <main class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow">
+    <form id="tskForm" class="space-y-4"></form>
+    <div class="flex flex-wrap gap-3 mt-6">
+      <button id="calcBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Berechnen</button>
+      <button type="button" id="resetBtn" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Zurücksetzen</button>
+      <button type="button" id="csvBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">CSV exportieren</button>
+      <button type="button" id="pdfBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">PDF exportieren</button>
+    </div>
+    <div id="resultBox" class="mt-6 p-4 rounded hidden"></div>
+  </main>
+<script>
+const CONFIG = {"questions": ["Ich habe Angst davor, dass ich mich möglicherweise verletze, wenn ich Sport treibe.", "Wenn ich versuchen würde, mich über die Schmerzen hinweg zu setzen, würden sie noch schlimmer.", "Mein Körper sagt mir, dass ich etwas sehr Schlimmes habe.", "Mein Gesundheitszustand wird von anderen nicht ernst genug genommen.", "Wegen des Schmerzproblems ist mein Körper für den Rest meines Lebens gefährdet.", "Schmerz bedeutet immer, dass ich mich verletzt habe.", "Die sicherste Art, zu verhindern, dass meine Schmerzen schlimmer werden, ist einfach darauf zu achten, dass ich keine unnötigen Bewegungen mache.", "Ich hätte nicht so viel Schmerzen, wenn nicht etwas Bedenkliches in meinem Körper vor sich ginge.", "Meine Schmerzen sagen mir, wann ich mit dem Training aufhören muss, um mich nicht zu verletzen.", "Ich kann nicht all die Dinge tun, die gesunde Menschen machen, da ich mich zu leicht verletzen könnte.", "Niemand sollte Sport treiben müssen, wenn er/sie Schmerzen hat."], "reverse_coding": [false, false, false, true, false, false, false, true, false, false, true], "activity_idx": [0, 1, 2, 5, 6, 8, 9], "somatic_idx": [3, 4, 7, 10], "threshold": 24};
+
+function renderQuestions() {
+  const form = document.getElementById('tskForm');
+  CONFIG.questions.forEach((q, i) => {
+    const reverseLabel = CONFIG.reverse_coding[i] ? ' (Rückkodierung)' : '';
+    const div = document.createElement('div');
+    div.innerHTML = `<label class="font-medium">{i+1}. {q}<span class="text-sm text-gray-500">{reverseLabel}</span></label>
+      <div class="flex gap-4 mt-1">
+        ${['A','B','C','D'].map((opt,j)=>`<label><input type="radio" name="q${i}" value="${j+1}"> ${opt}</label>`).join('')}
+      </div>`;
+    form.appendChild(div);
+  });
+}
+
+function calculate() {
+  let total=0, aa=0, sf=0, missing=[];
+  CONFIG.questions.forEach((_,i)=>{
+    const sel=document.querySelector(`input[name=q${i}]:checked`);
+    if(!sel){ missing.push(i+1); return; }
+    let v=parseInt(sel.value);
+    if(CONFIG.reverse_coding[i]) v=5-v;
+    total+=v;
+    if(CONFIG.activity_idx.includes(i)) aa+=v;
+    if(CONFIG.somatic_idx.includes(i)) sf+=v;
+  });
+  if(missing.length>0) {
+    alert("Bitte beantworten Sie alle Fragen. Fehlend: " + missing.join(", "));
+    return;
+  }
+  const interp = total >= CONFIG.threshold ? "Hohe Kinesiophobie (≥"+CONFIG.threshold+")" : "Niedrig-mittlere Kinesiophobie";
+  const box=document.getElementById('resultBox');
+  box.className = "mt-6 p-4 rounded text-white " + (total >= CONFIG.threshold ? "bg-red-500" : "bg-green-500");
+  box.innerHTML = `<p><strong>Gesamtpunktzahl:</strong> ${total}</p>
+                   <p><strong>Activity Avoidance:</strong> ${aa}</p>
+                   <p><strong>Somatic Focus:</strong> ${sf}</p>
+                   <p><strong>Interpretation:</strong> ${interp}</p>`;
+  box.classList.remove('hidden');
+  return {total,aa,sf,interp};
+}
+
+function exportCSV(res) {
+  const now = new Date();
+  const ts = now.toISOString().slice(0,16).replace('T','_').replace(':','-');
+  const csv = `Datum;Gesamtpunktzahl;Activity Avoidance;Somatic Focus;Interpretation\n${now.toLocaleString()};${res.total};${res.aa};${res.sf};${res.interp}`;
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `TSK11_${ts}.csv`;
+  link.click();
+}
+
+function exportPDF(res) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text("THIM STUDENTS", 20, 20);
+  doc.setFontSize(14);
+  doc.text("Tampa Skala für Kinesiophobie (TSK-11)", 20, 30);
+  doc.setFontSize(12);
+  doc.text("Datum: " + new Date().toLocaleString(), 20, 40);
+  doc.text("Gesamtpunktzahl: " + res.total, 20, 50);
+  doc.text("Activity Avoidance: " + res.aa, 20, 60);
+  doc.text("Somatic Focus: " + res.sf, 20, 70);
+  doc.text("Interpretation: " + res.interp, 20, 80);
+  doc.save("TSK11_Report.pdf");
+}
+
+document.getElementById('calcBtn').addEventListener('click',(e)=>{e.preventDefault(); const res=calculate(); window._lastRes=res;});
+document.getElementById('resetBtn').addEventListener('click',()=>{document.getElementById('tskForm').reset(); document.getElementById('resultBox').classList.add('hidden');});
+document.getElementById('csvBtn').addEventListener('click',()=>{ if(window._lastRes) exportCSV(window._lastRes); else alert('Bitte zuerst berechnen'); });
+document.getElementById('pdfBtn').addEventListener('click',()=>{ if(window._lastRes) exportPDF(window._lastRes); else alert('Bitte zuerst berechnen'); });
+
+renderQuestions();
+</script>
+</body>
+</html>
