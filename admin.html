@@ -8,6 +8,46 @@
 </head>
 <body class="p-6 bg-gray-50">
 <h1 class="text-2xl font-bold mb-4">Admin-Seite</h1>
-<p>Hier können Sie in Zukunft Fragen und Schwellenwerte bearbeiten.</p>
+<p class="mb-4">Hier können Sie die Fragen bearbeiten. Nach Änderungen müssen Sie den Code aus der exportierten <code>config.json</code> in <code>index.html</code> einfügen.</p>
+
+<textarea id="questions" class="w-full h-64 p-2 border border-gray-300 rounded"></textarea>
+
+<div class="mt-4">
+<button id="download" class="bg-blue-600 text-white px-4 py-2 rounded">Download neue config.json</button>
+</div>
+
+<script>
+const defaultConfig = {
+  "questions": [
+    "Ich habe Angst davor, dass ich mich möglicherweise verletze, wenn ich Sport treibe.",
+    "Wenn ich versuchen würde, mich über die Schmerzen hinweg zu setzen, würden sie noch schlimmer.",
+    "Mein Körper sagt mir, dass ich etwas sehr Schlimmes habe.",
+    "Mein Gesundheitszustand wird von anderen nicht ernst genug genommen.",
+    "Wegen des Schmerzproblems ist mein Körper für den Rest meines Lebens gefährdet.",
+    "Schmerz bedeutet immer, dass ich mich verletzt habe.",
+    "Die sicherste Art, zu verhindern, dass meine Schmerzen schlimmer werden, ist einfach darauf zu achten, dass ich keine unnötigen Bewegungen mache.",
+    "Ich hätte nicht so viel Schmerzen, wenn nicht etwas Bedenkliches in meinem Körper vor sich ginge.",
+    "Meine Schmerzen sagen mir, wann ich mit dem Training aufhören muss, um mich nicht zu verletzen.",
+    "Ich kann nicht all die Dinge tun, die gesunde Menschen machen, da ich mich zu leicht verletzen könnte.",
+    "Niemand sollte Sport treiben müssen, wenn er/sie Schmerzen hat."
+  ],
+  "reverse_coding": [false, false, false, true, false, false, false, true, false, false, true],
+  "activity_idx": [0, 1, 2, 5, 6, 8, 9],
+  "somatic_idx": [3, 4, 7, 10],
+  "threshold": 24
+};
+
+document.getElementById('questions').value = defaultConfig.questions.join("\n");
+
+document.getElementById('download').addEventListener('click', () => {
+    const newQuestions = document.getElementById('questions').value.split("\n");
+    defaultConfig.questions = newQuestions;
+    const blob = new Blob([JSON.stringify(defaultConfig, null, 2)], {type: 'application/json'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'config.json';
+    link.click();
+});
+</script>
 </body>
 </html>
