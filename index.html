@@ -24,14 +24,32 @@
     <div id="resultBox" class="mt-6 p-4 rounded hidden"></div>
   </main>
 <script>
-const CONFIG = {"questions": ["Ich habe Angst davor, dass ich mich möglicherweise verletze, wenn ich Sport treibe.", "Wenn ich versuchen würde, mich über die Schmerzen hinweg zu setzen, würden sie noch schlimmer.", "Mein Körper sagt mir, dass ich etwas sehr Schlimmes habe.", "Mein Gesundheitszustand wird von anderen nicht ernst genug genommen.", "Wegen des Schmerzproblems ist mein Körper für den Rest meines Lebens gefährdet.", "Schmerz bedeutet immer, dass ich mich verletzt habe.", "Die sicherste Art, zu verhindern, dass meine Schmerzen schlimmer werden, ist einfach darauf zu achten, dass ich keine unnötigen Bewegungen mache.", "Ich hätte nicht so viel Schmerzen, wenn nicht etwas Bedenkliches in meinem Körper vor sich ginge.", "Meine Schmerzen sagen mir, wann ich mit dem Training aufhören muss, um mich nicht zu verletzen.", "Ich kann nicht all die Dinge tun, die gesunde Menschen machen, da ich mich zu leicht verletzen könnte.", "Niemand sollte Sport treiben müssen, wenn er/sie Schmerzen hat."], "reverse_coding": [false, false, false, true, false, false, false, true, false, false, true], "activity_idx": [0, 1, 2, 5, 6, 8, 9], "somatic_idx": [3, 4, 7, 10], "threshold": 24};
+const CONFIG = {
+  "questions": [
+    "Ich habe Angst davor, dass ich mich möglicherweise verletze, wenn ich Sport treibe.",
+    "Wenn ich versuchen würde, mich über die Schmerzen hinweg zu setzen, würden sie noch schlimmer.",
+    "Mein Körper sagt mir, dass ich etwas sehr Schlimmes habe.",
+    "Mein Gesundheitszustand wird von anderen nicht ernst genug genommen.",
+    "Wegen des Schmerzproblems ist mein Körper für den Rest meines Lebens gefährdet.",
+    "Schmerz bedeutet immer, dass ich mich verletzt habe.",
+    "Die sicherste Art, zu verhindern, dass meine Schmerzen schlimmer werden, ist einfach darauf zu achten, dass ich keine unnötigen Bewegungen mache.",
+    "Ich hätte nicht so viel Schmerzen, wenn nicht etwas Bedenkliches in meinem Körper vor sich ginge.",
+    "Meine Schmerzen sagen mir, wann ich mit dem Training aufhören muss, um mich nicht zu verletzen.",
+    "Ich kann nicht all die Dinge tun, die gesunde Menschen machen, da ich mich zu leicht verletzen könnte.",
+    "Niemand sollte Sport treiben müssen, wenn er/sie Schmerzen hat."
+  ],
+  "reverse_coding": [false, false, false, true, false, false, false, true, false, false, true],
+  "activity_idx": [0, 1, 2, 5, 6, 8, 9],
+  "somatic_idx": [3, 4, 7, 10],
+  "threshold": 24
+};
 
 function renderQuestions() {
   const form = document.getElementById('tskForm');
   CONFIG.questions.forEach((q, i) => {
     const reverseLabel = CONFIG.reverse_coding[i] ? ' (Rückkodierung)' : '';
     const div = document.createElement('div');
-    div.innerHTML = `<label class="font-medium">{i+1}. {q}<span class="text-sm text-gray-500">{reverseLabel}</span></label>
+    div.innerHTML = `<label class="font-medium">${i+1}. ${q}<span class="text-sm text-gray-500">${reverseLabel}</span></label>
       <div class="flex gap-4 mt-1">
         ${['A','B','C','D'].map((opt,j)=>`<label><input type="radio" name="q${i}" value="${j+1}"> ${opt}</label>`).join('')}
       </div>`;
